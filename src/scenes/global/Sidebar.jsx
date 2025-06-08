@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Sidebar as ProSidebar,
   Menu,
@@ -19,8 +19,7 @@ import TimelineOutlinedIcon from '@mui/icons-material/TimelineOutlined';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined";
 import MapOutlinedIcon from "@mui/icons-material/ReceiptOutlined";
-
-
+import PhotoCamera from "@mui/icons-material/PhotoCamera";
 
 const Item = ({ title, to, icon, selected, setSelected }) => {
   const theme = useTheme();
@@ -30,7 +29,7 @@ const Item = ({ title, to, icon, selected, setSelected }) => {
       active={selected === title}
       onClick={() => setSelected(title)}
       icon={icon}
-      component={<Link/>}
+      component={<Link />}
       to={to}
       rootStyles={{
         color: colors.grey[100],
@@ -52,6 +51,31 @@ const Sidebar = () => {
   const colors = tokens(theme.palette.mode);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [selected, setSelected] = useState("Dashboard");
+
+  // Profile picture state with persistence
+  const defaultProfile = {
+    avatar: "/assets/user.png"
+  };
+
+  const [profile, setProfile] = useState(() => {
+    const saved = localStorage.getItem("adminProfile");
+    return saved ? JSON.parse(saved) : defaultProfile;
+  });
+
+  useEffect(() => {
+    localStorage.setItem("adminProfile", JSON.stringify(profile));
+  }, [profile]);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfile((prev) => ({ ...prev, avatar: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   return (
     <Box height="100vh">
@@ -93,14 +117,37 @@ const Sidebar = () => {
           {/* USER INFO */}
           {!isCollapsed && (
             <Box mb="25px">
-              <Box display="flex" justifyContent="center" alignItems="center">
+              <Box display="flex" justifyContent="center" alignItems="center" position="relative">
                 <img
                   alt="profile-user"
                   width="100px"
                   height="100px"
-                  src="/assets/user.png"
-                  style={{ cursor: "pointer", borderRadius: "50%" }}
+                  src={profile.avatar}
+                  style={{ borderRadius: "50%", objectFit: "cover" }}
                 />
+                <input
+                  type="file"
+                  accept="image/*"
+                  id="upload-avatar"
+                  style={{ display: "none" }}
+                  onChange={handleImageChange}
+                />
+                <label htmlFor="upload-avatar">
+                  <IconButton
+                    component="span"
+                    sx={{
+                      position: "absolute",
+                      bottom: 4,
+                      right: 4,
+                      backgroundColor: "rgba(0,0,0,0.5)",
+                      color: "white",
+                      padding: "4px",
+                      '&:hover': { backgroundColor: "rgba(0,0,0,0.7)" }
+                    }}
+                  >
+                    <PhotoCamera fontSize="small" />
+                  </IconButton>
+                </label>
               </Box>
               <Box textAlign="center">
                 <Typography
@@ -126,7 +173,6 @@ const Sidebar = () => {
               selected={selected}
               setSelected={setSelected}
             />
-
             <Typography
               variant="h6"
               color={colors.grey[500]}

@@ -425,7 +425,7 @@ const Team = () => {
             textAlign: "center",
           }}
         >
-          Confirm Delete?
+          Confirm Delete  ?
         </DialogTitle>
         <DialogContent>
           <DialogContentText
